@@ -1,0 +1,40 @@
+name: Moodle Reminder
+
+on:
+  schedule:
+    # 毎日 日本時間8:00 に実行 (UTC 23:00)
+    - cron: "0 23 * * *"
+  workflow_dispatch: {}  # 手動実行もできるようにする
+
+permissions:
+  contents: write  # notified.json をリポジトリにコミットするために必要
+
+jobs:
+  remind:
+    runs-on: ubuntu-latest
+    steps:
+      - name: リポジトリをチェックアウト
+        uses: actions/checkout@v4
+
+      - name: Pythonをセットアップ
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: 依存パッケージをインストール
+        run: pip install -r requirements.txt
+
+      - name: リマインドスクリプトを実行
+        env:
+          ICAL_URL: ${{ secrets.ICAL_URL }}
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          REMIND_DAYS_BEFORE: "3"
+        run: python remind.py
+
+      - name: 通知済みリストの変更をコミット
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add notified.json
+          git diff --quiet --cached || git commit -m "update notified.json"
+          git push
