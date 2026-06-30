@@ -2,8 +2,8 @@ name: Moodle Reminder
 
 on:
   schedule:
-    # 毎日 日本時間8:00 に実行 (UTC 23:00)
-    - cron: "0 23 * * *"
+    # 毎日 日本時間9:00 に実行 (UTC 0:00)
+    - cron: "0 0 * * *"
   workflow_dispatch: {}  # 手動実行もできるようにする
 
 permissions:
@@ -38,3 +38,4 @@ jobs:
           git add notified.json
           git diff --quiet --cached || git commit -m "update notified.json"
           git push
+
